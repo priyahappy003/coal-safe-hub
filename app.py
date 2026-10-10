@@ -19,6 +19,7 @@ from reportlab.lib.styles import getSampleStyleSheet
 
 REPORT_FILE = "hazard_reports.csv"
 SENSOR_FILE = "sensor_history.csv"
+ALERT_FILE = "alert_history.csv"
 
 MODEL_FILE = "coal_risk_model.pkl"
 
@@ -637,12 +638,13 @@ elif page == "Environment Monitoring":
     else:
         st.info("Below demonstration humidity threshold")
 
-    # Save simulated readings
+    
+    # Save simulated readings and alert history
     if st.button("Record Current Readings"):
+        recorded_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
         new_reading = pd.DataFrame([{
-            "Date and Time": datetime.now().strftime(
-                "%Y-%m-%d %H:%M:%S"
-            ),
+            "Date and Time": recorded_at,
             "Methane (%)": methane,
             "Temperature (°C)": temperature,
             "Humidity (%)": humidity
@@ -660,7 +662,80 @@ elif page == "Environment Monitoring":
             index=False
         )
 
-        st.success("Simulated readings saved successfully!")
+        reasons = []
+
+        if methane >= 1.0:
+            reasons.append("Methane demonstration threshold reached")
+        if temperature >= 40:
+            reasons.append("Temperature demonstration threshold reached")
+        if humidity >= 85:
+            reasons.append("Humidity demonstration threshold reached")
+
+        if methane >= 1.0:
+            alert_level = "Critical"
+        elif temperature >= 40:
+            alert_level = "High"
+        elif humidity >= 85:
+            alert_level = "Warning"
+        else:
+            alert_level = "Normal"
+
+        alert_record = pd.DataFrame([{
+            "Date and Time": recorded_at,
+            "Alert Level": alert_level,
+            "Methane (%)": methane,
+            "Temperature (°C)": temperature,
+            "Humidity (%)": humidity,
+            "Reason": "; ".join(reasons) if reasons
+            else "No demonstration threshold reached"
+        }])
+
+        alert_file_exists = (
+            os.path.exists(ALERT_FILE)
+            and os.path.getsize(ALERT_FILE) > 0
+        )
+
+        alert_record.to_csv(
+            ALERT_FILE,
+            mode="a",
+            header=not alert_file_exists,
+            index=False
+        )
+
+        st.success("Sensor readings and alert history saved!")
+
+        if alert_level == "Critical":
+            st.error("Critical demonstration alert recorded.")
+        elif alert_level == "High":
+            st.error("High demonstration alert recorded.")
+        elif alert_level == "Warning":
+            st.warning("Warning recorded.")
+        else:
+            st.success("No demonstration alert recorded.")
+
+    # Display saved alert history
+    st.subheader("🚨 Alert History")
+
+    if os.path.exists(ALERT_FILE) and os.path.getsize(ALERT_FILE) > 0:
+        alert_history = pd.read_csv(ALERT_FILE)
+
+        if not alert_history.empty:
+            st.dataframe(
+                alert_history.iloc[::-1],
+                use_container_width=True,
+                hide_index=True
+            )
+
+            st.download_button(
+                "Download Alert History CSV",
+                data=alert_history.to_csv(index=False).encode("utf-8"),
+                file_name="coal_safe_hub_alert_history.csv",
+                mime="text/csv"
+            )
+        else:
+            st.info("No alerts recorded yet.")
+    else:
+        st.info("No alert history yet. Record current readings first.")
 
     # Display saved reading history
     if (
