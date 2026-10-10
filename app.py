@@ -265,6 +265,7 @@ page = st.sidebar.radio(
         "View Reports",
         "Environment Monitoring",
         "ML Risk Prediction",
+        "Model Comparison",
         "Safety Guidelines",
         "About"
     ]
@@ -870,3 +871,38 @@ elif page == "About":
         "This application is a prototype, not a certified "
         "mine-safety or emergency-response system."
     )
+    # MODEL COMPARISON PAGE
+elif page == "Model Comparison":
+    st.header("📊 ML Model Comparison")
+    st.write(
+        "Compare different machine learning models "
+        "trained on synthetic Coal Safe Hub data."
+    )
+
+    try:
+        results = pd.read_csv("model_comparison_results.csv")
+
+        st.subheader("Model Performance Table")
+        st.dataframe(results, use_container_width=True)
+
+        st.subheader("Accuracy Comparison")
+        st.bar_chart(
+            results.set_index("Model")[["Accuracy"]]
+        )
+
+        st.subheader("Macro F1 Comparison")
+        st.bar_chart(
+            results.set_index("Model")[["Macro F1"]]
+        )
+
+        st.warning(
+            "Academic demonstration only: these results use "
+            "synthetic data and do not establish real-world "
+            "coal mine safety performance."
+        )
+
+    except FileNotFoundError:
+        st.error(
+            "Comparison results not found. "
+            "Run python train_model.py first."
+        )
