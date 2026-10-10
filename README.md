@@ -74,3 +74,17 @@ The application uses local CSV files for demonstration data and records. The inc
 
 ## 10. Conclusion
 Coal Safe Hub demonstrates an integrated academic approach to hazard reporting, simulated environmental monitoring, and machine-learning-based risk estimation. It provides a foundation for further research and validation, rather than a deployable mine safety system.
+## Live Demo
+
+Try the deployed application here:
+
+[Coal Safe Hub — Open Live App](https://coal-safe-app-tbuqtfrnkgvbmnvgwihaje.streamlit.app/)
+
+## Project Features
+
+- Coal mine sensor monitoring dashboard
+- Hazard reporting and alerts
+- Machine Learning-based risk prediction
+- Model comparison dashboard
+
+**Note:** This is an academic prototype using demonstration data, not a certified real-world mine safety system.
